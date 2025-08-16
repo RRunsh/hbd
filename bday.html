@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <title>Happy Birthday ❤️</title>
+  <meta name="theme-color" content="#ff4d79" />
+  <style>
+    :root {
+      --bg1: #0f0c29;
+      --bg2: #302b63;
+      --bg3: #24243e;
+      --accent: #ff4d79;
+      --accent-2: #ffd166;
+      --card: #ffffff10;
+      --text: #f8f8ff;
+      --muted: #cfcfe6;
+      --glass: rgba(255, 255, 255, 0.08);
+      --blur: blur(8px);
+      --shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+      --radius: 22px;
+    }
+    * {
+      box-sizing: border-box;
+    }
+    html, body {
+      height: 100%;
+    }
+    body {
+      margin: 0;
+      color: var(--text);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      background: radial-gradient(1200px 800px at 80% -10%, #ff6f91 0%, rgba(255, 111, 145, 0) 40%), linear-gradient(135deg, var(--bg1), var(--bg2) 45%, var(--bg3));
+      overflow-x: hidden;
+    }
+    .noise {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.03;
+      background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch"/></filter><rect width="120" height="120" filter="url(%23n)" opacity="0.5"/></svg>');
+    }
+
+    /* Floating hearts canvas behind everything */
+    #bgCanvas {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+    }
+
+    header.hero {
+      position: relative;
+      z-index: 1;
+      min-height: 92dvh;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      padding: 24px;
+      overflow: hidden;
+    }
+    .hero-inner {
+      backdrop-filter: saturate(140%) blur(6px);
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02));
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      padding: 24px;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      max-width: 860px;
+      width: clamp(300px, 90vw, 860px);
+    }
+    h1.title {
+      font-size: clamp(28px, 7vw, 62px);
+      line-height: 1.05;
+      margin: 10px 0 6px;
+      letter-spacing: 0.5px;
+      animation: fadeIn 2s ease-in-out;
+    }
+    p.subtitle {
+      color: var(--muted);
+      font-size: clamp(14px, 3.4vw, 18px);
+      margin: 8px 0 18px;
+      animation: fadeIn 3s ease-in-out;
+    }
+
+    main {
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Photo gallery */
+    .section {
+      padding: 20px clamp(14px, 4vw, 40px);
+    }
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+    @media (min-width: 720px) {
+      .gallery {
+        grid-template-columns: repeat(4, 1fr);
+      }
+    }
+    .gallery .item {
+      position: relative;
+      border-radius: 16px;
+      overflow: hidden;
+      aspect-ratio: 1/1;
+      background: #1b1b2d;
+      transform: scale(1);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      animation: scaleIn 0.5s ease-out;
+      perspective: 1000px;
+    }
+    .gallery .item:hover {
+      transform: scale(1.1);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+    }
+    .gallery .item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.5s ease;
+      animation: floatImage 3s ease-in-out infinite;
+    }
+    .gallery .item:hover img {
+      transform: scale(1.15);
+    }
+
+    /* Additional Image Effects */
+    .gallery .item {
+      overflow: hidden;
+      transform-style: preserve-3d;
+    }
+
+    /* 3D Flip Effect */
+    .gallery .item.flip img {
+      transition: transform 0.8s;
+      transform-style: preserve-3d;
+    }
+
+    .gallery .item.flip:hover img {
+      transform: rotateY(180deg);
+    }
+
+    /* Glowing Border Effect */
+    .gallery .item.glow {
+      transition: box-shadow 0.3s;
+    }
+
+    .gallery .item.glow:hover {
+      box-shadow: 0 0 20px var(--accent),
+                  0 0 40px var(--accent-2);
+    }
+
+    /* Tilt Effect */
+    .gallery .item.tilt {
+      transform-style: preserve-3d;
+      perspective: 1000px;
+    }
+
+    /* Polaroid Effect */
+    .gallery .item.polaroid {
+      padding: 10px 10px 30px 10px;
+      background: white;
+      transform: rotate(-3deg);
+      transition: all 0.5s ease;
+    }
+
+    .gallery .item.polaroid:hover {
+      transform: rotate(0deg) scale(1.05);
+    }
+
+    /* Heartbeat Effect */
+    @keyframes heartbeat {
+      0% { transform: scale(1); }
+      14% { transform: scale(1.1); }
+      28% { transform: scale(1); }
+      42% { transform: scale(1.1); }
+      70% { transform: scale(1); }
+    }
+
+    .gallery .item.heartbeat:hover img {
+      animation: heartbeat 1.5s infinite;
+    }
+
+    /* Ripple Effect */
+    .gallery .item.ripple::before {
+      content: '';
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle, transparent 30%, rgba(255,255,255,0.7) 30%);
+      transform: scale(0);
+      opacity: 0;
+      transition: transform 0.5s, opacity 0.5s;
+    }
+
+    .gallery .item.ripple:hover::before {
+      transform: scale(3);
+      opacity: 0;
+    }
+
+    /* Animations */
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    @keyframes floatMessage {
+      0% { 
+        transform: translate(0, 100vh) rotate(-5deg);
+        opacity: 0;
+      }
+      10% { opacity: 1; }
+      90% { opacity: 1; }
+      100% { 
+        transform: translate(0, -100px) rotate(5deg);
+        opacity: 0;
+      }
+    }
+    @keyframes scaleIn {
+      from { transform: scale(0); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+    @keyframes floatImage {
+      0% { transform: translateY(0) rotate(0deg); }
+      50% { transform: translateY(-10px) rotate(2deg); }
+      100% { transform: translateY(0) rotate(0deg); }
+    }
+
+    /* Start screen styles */
+    #start-screen {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: #000;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      z-index: 9999;
+    }
+
+    #start-screen h2 {
+      margin-bottom: 20px;
+    }
+
+    #start-screen button {
+      padding: 12px 25px;
+      font-size: 18px;
+      border: none;
+      background: #ff4081;
+      color: white;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .container {
+      position: relative;
+      z-index: 2;
+      display: none;
+    }
+
+    .credit {
+      position: fixed;
+      bottom: 20px;
+      left: 0;
+      width: 100%;
+      text-align: center;
+      color: var(--muted);
+      font-size: 14px;
+      padding: 10px;
+      z-index: 2;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+
+    /* Floating message styles */
+    .message-float {
+      position: fixed;
+      color: white;
+      font-size: 24px;
+      font-weight: bold;
+      text-align: center;
+      padding: 15px 25px;
+      background: rgba(255, 77, 121, 0.2);
+      backdrop-filter: blur(5px);
+      border-radius: 15px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+      z-index: 100;
+      transform-origin: center;
+      font-family: 'Segoe UI', sans-serif;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+      animation: none;
+      background: linear-gradient(135deg, rgba(255, 77, 121, 0.3), rgba(255, 192, 203, 0.2));
+    }
+
+    .message-left-to-right {
+      animation: leftToRight 8s linear forwards;
+    }
+
+    .message-diagonal {
+      animation: diagonal 8s linear forwards;
+    }
+
+    .message-center-burst {
+      animation: centerBurst 8s ease-in-out forwards;
+    }
+
+    .message-heart {
+      animation: heartBeat 8s ease-in-out forwards;
+    }
+
+    .message-sparkle {
+      animation: sparkleIn 8s ease-in-out forwards;
+    }
+
+    .message-rainbow {
+      animation: rainbowFloat 8s ease-in-out forwards;
+    }
+
+    @keyframes leftToRight {
+      0% { 
+        left: -100%;
+        top: 50%;
+        transform: translate(0, -50%) rotate(-5deg);
+        opacity: 0;
+      }
+      10% { opacity: 1; }
+      90% { opacity: 1; }
+      100% { 
+        left: 100%;
+        top: 50%;
+        transform: translate(0, -50%) rotate(5deg);
+        opacity: 0;
+      }
+    }
+
+    @keyframes diagonal {
+      0% { 
+        left: -50px;
+        top: 100%;
+        transform: rotate(-15deg);
+        opacity: 0;
+      }
+      10% { opacity: 1; }
+      90% { opacity: 1; }
+      100% { 
+        left: calc(100% + 50px);
+        top: -100px;
+        transform: rotate(15deg);
+        opacity: 0;
+      }
+    }
+
+    @keyframes centerBurst {
+      0% { 
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%) scale(0);
+        opacity: 0;
+      }
+      10% { 
+        transform: translate(-50%, -50%) scale(1.2);
+        opacity: 1;
+      }
+      80% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+      }
+      100% { 
+        transform: translate(-50%, -50%) scale(1.5);
+        opacity: 0;
+      }
+    }
+
+    @keyframes heartBeat {
+      0%, 100% { transform: scale(0) rotate(-10deg); opacity: 0; }
+      10%, 90% { transform: scale(1.1) rotate(5deg); opacity: 1; }
+      20%, 80% { transform: scale(1) rotate(0deg); opacity: 1; }
+      50% { transform: scale(1.15) rotate(-5deg); }
+    }
+
+    @keyframes sparkleIn {
+      0% { transform: translate(-50%, 100vh) scale(0); opacity: 0; filter: brightness(1); }
+      10% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; filter: brightness(1.5); }
+      20% { transform: translate(-50%, -50%) scale(1); opacity: 1; filter: brightness(1); }
+      80% { transform: translate(-50%, -50%) scale(1); opacity: 1; filter: brightness(1.2); }
+      100% { transform: translate(-50%, -100vh) scale(0); opacity: 0; filter: brightness(1); }
+    }
+
+    @keyframes rainbowFloat {
+      0% { left: -100%; filter: hue-rotate(0deg); }
+      10% { left: 50%; filter: hue-rotate(60deg); }
+      90% { left: 50%; filter: hue-rotate(300deg); }
+      100% { left: 100%; filter: hue-rotate(360deg); }
+    }
+
+    .page {
+      display: none;
+      animation: fadeIn 1s ease-out;
+    }
+
+    .page.active {
+      display: block;
+    }
+
+    .nav-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin: 20px 0;
+    }
+
+    .nav-button {
+      padding: 10px 25px;
+      border: none;
+      border-radius: 25px;
+      background: var(--accent);
+      color: white;
+      cursor: pointer;
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+
+    .nav-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(255, 77, 121, 0.4);
+    }
+  </style>
+</head>
+<body>
+  <canvas id="bgCanvas"></canvas>
+  <div class="noise"></div>
+
+  <!-- Start screen -->
+  <div id="start-screen">
+    <h2>🎉 Happy Birthday My Love ❤️</h2>
+    <button onclick="startSite()">Tap to Start 💖</button>
+  </div>
+
+  <!-- Background music -->
+  <audio id="bg-music" loop>
+    <source src="music.mp3" type="audio/mpeg">
+  </audio>
+
+  <div class="container">
+    <header class="hero">
+      <div class="hero-inner card">
+        <h1 class="title">Happy Birthday, My Love ❤️</h1>
+        <p class="subtitle">Wishing you a day filled with love, laughter, and happiness!</p>
+      </div>
+    </header>
+
+    <main>
+      <div class="page active" id="page1">
+        <section class="section card">
+          <div class="gallery">
+            <div class="item">
+              <img src="Photo1.jpg" alt="Photo 1">
+            </div>
+            <div class="item">
+              <img src="Photo2.jpg" alt="Photo 2">
+            </div>
+            <div class="item">
+              <img src="Photo3.jpg" alt="Photo 3">
+            </div>
+            <div class="item">
+              <img src="Photo4.jpg" alt="Photo 4">
+            </div>
+          </div>
+          <div class="nav-buttons">
+            <button class="nav-button" onclick="showPage(2)">Next Photos ➡️</button>
+          </div>
+        </section>
+      </div>
+
+      <div class="page" id="page2">
+        <section class="section card">
+          <div class="gallery">
+            <div class="item">
+              <img src="Photo5.jpg" alt="Photo 5">
+            </div>
+            <div class="item">
+              <img src="Photo6.jpg" alt="Photo 6">
+            </div>
+            <div class="item">
+              <img src="Photo7.jpg" alt="Photo 7">
+            </div>
+            <div class="item">
+              <img src="Photo8.jpg" alt="Photo 8">
+            </div>
+          </div>
+          <div class="nav-buttons">
+            <button class="nav-button" onclick="showPage(1)">⬅️ Previous Photos</button>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <div class="credit">Made with ❤️ by Priyanshu</div>
+
+  <script>
+    // Start site logic
+    function startSite() {
+      document.getElementById("start-screen").style.display = "none";
+      document.querySelector(".container").style.display = "block";
+      const music = document.getElementById("bg-music");
+      music.play();
+    }
+
+    // Floating Hearts Canvas
+    const canvas = document.getElementById('bgCanvas');
+    const ctx = canvas.getContext('2d');
+    let W, H;
+    const hearts = [];
+
+    function resize() {
+      W = canvas.width = innerWidth;
+      H = canvas.height = innerHeight;
+    }
+    addEventListener('resize', resize);
+    resize();
+
+    function heartPath(x, y, s) {
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      ctx.bezierCurveTo(x - s, y - s, x - 2 * s, y + s * 0.2, x, y + 1.4 * s);
+      ctx.bezierCurveTo(x + 2 * s, y + s * 0.2, x + s, y - s, x, y);
+    }
+    for (let i = 0; i < 36; i++)
+      hearts.push({
+        x: Math.random() * innerWidth,
+        y: Math.random() * innerHeight,
+        s: 6 + Math.random() * 10,
+        a: 0.15 + 0.35 * Math.random(),
+        vy: 0.2 + 0.6 * Math.random(),
+        vx: (Math.random() - 0.5) * 0.2,
+      });
+    (function animate() {
+      ctx.clearRect(0, 0, W, H);
+      for (const h of hearts) {
+        ctx.save();
+        ctx.globalAlpha = h.a;
+        ctx.fillStyle = '#ff4d79';
+        heartPath(h.x, h.y, h.s);
+        ctx.fill();
+        ctx.restore();
+        h.y += h.vy;
+        h.x += h.vx;
+        if (h.y > H + 20) {
+          h.y = -20;
+          h.x = Math.random() * W;
+        }
+      }
+      requestAnimationFrame(animate);
+    })();
+
+    // Add Confetti Effect
+    const confetti = [];
+    function createConfetti() {
+      confetti.push({
+        x: Math.random() * canvas.width,
+        y: -10,
+        size: Math.random() * 5 + 2,
+        speed: Math.random() * 3 + 1,
+        color: `hsl(${Math.random() * 360}, 100%, 50%)`
+      });
+    }
+
+    function drawConfetti() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      // Draw hearts
+      for (const h of hearts) {
+        ctx.save();
+        ctx.globalAlpha = h.a;
+        ctx.fillStyle = '#ff4d79';
+        heartPath(h.x, h.y, h.s);
+        ctx.fill();
+        ctx.restore();
+        h.y += h.vy;
+        h.x += h.vx;
+        if (h.y > H + 20) {
+          h.y = -20;
+          h.x = Math.random() * W;
+        }
+      }
+
+      // Draw confetti
+      confetti.forEach((c, i) => {
+        ctx.fillStyle = c.color;
+        ctx.fillRect(c.x, c.y, c.size, c.size);
+        c.y += c.speed;
+        if (c.y > canvas.height) confetti.splice(i, 1);
+      });
+
+      requestAnimationFrame(drawConfetti);
+    }
+
+    setInterval(createConfetti, 100);
+    drawConfetti();
+
+    const messages = [
+      "You light up my world ✨",
+      "Forever & Always 💑",
+      "My heart belongs to you 💝",
+      "You're my favorite person 🌟",
+      "Every moment with you is magical ✨",
+      "You're my perfect match 💕",
+      "My love grows stronger each day 🌹",
+      "You're my happily ever after 👑",
+      "You make my heart smile 💖",
+      "My love for you is endless ∞"
+    ];
+
+    const animations = ['message-left-to-right', 'message-diagonal', 'message-center-burst'];
+
+    function createFloatingMessage() {
+      const message = document.createElement('div');
+      message.className = 'message-float ' + animations[Math.floor(Math.random() * animations.length)];
+      message.textContent = messages[Math.floor(Math.random() * messages.length)];
+      document.body.appendChild(message);
+      
+      message.addEventListener('animationend', () => {
+        message.remove();
+      });
+    }
+
+    // Start creating floating messages after site starts
+    function startSite() {
+      document.getElementById("start-screen").style.display = "none";
+      document.querySelector(".container").style.display = "block";
+      const music = document.getElementById("bg-music");
+      music.play();
+      
+      // Add floating messages
+      setInterval(createFloatingMessage, 3000);
+    }
+
+    // Replace your existing image hover effect code with:
+    function setupImageEffects() {
+      const effects = ['flip', 'glow', 'tilt', 'polaroid', 'heartbeat', 'ripple'];
+      
+      document.querySelectorAll('.gallery .item').forEach((item, index) => {
+        // Apply random effect class
+        const effectClass = effects[index % effects.length];
+        item.classList.add(effectClass);
+        
+        // Special handling for tilt effect
+        if (item.classList.contains('tilt')) {
+          item.addEventListener('mousemove', (e) => {
+            const rect = item.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            const xRotation = ((y - rect.height / 2) / rect.height) * 20;
+            const yRotation = ((x - rect.width / 2) / rect.width) * 20;
+            
+            item.style.transform = `
+              perspective(1000px) 
+              rotateX(${xRotation}deg) 
+              rotateY(${yRotation}deg)
+              scale3d(1.05,1.05,1.05)
+            `;
+          });
+          
+          item.addEventListener('mouseleave', () => {
+            item.style.transform = 'perspective(1000px) rotateX(0) rotateY(0)';
+          });
+        }
+        
+        // Keep existing hover sound effect
+        item.addEventListener('mouseover', () => {
+          const audio = new Audio('hover.mp3');
+          audio.volume = 0.2;
+          audio.play();
+        });
+      });
+    }
+
+    // Add this to your existing startSite function
+    function startSite() {
+      document.getElementById("start-screen").style.display = "none";
+      document.querySelector(".container").style.display = "block";
+      const music = document.getElementById("bg-music");
+      music.play();
+      
+      // Add floating messages
+      setInterval(createFloatingMessage, 3000);
+      setupImageEffects();
+    }
+
+    // Page navigation
+    function showPage(pageNum) {
+      document.querySelectorAll('.page').forEach(page => {
+        page.classList.remove('active');
+      });
+      document.getElementById(`page${pageNum}`).classList.add('active');
+    }
+  </script>
+</body>
+</html>
